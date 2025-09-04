@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true  
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+spring:
+  application:
+    name: API-GATEWAY
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://UMS
+          predicates:
+            - Path=/auth/**
+          filters:
+            - AuthenticationFilter
+
+        - id: BOOKING-REVIEW
+          uri: lb://BOOKING-REVIEW
+          predicates:
+            - Path=/bookings/**
+#            - Path=/feedback/**
+          filters:
+            - AuthenticationFilter						
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+             - Path=/payment/**
+          filters:
+             - AuthenticationFilter
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.netflix.eureka: INFO
